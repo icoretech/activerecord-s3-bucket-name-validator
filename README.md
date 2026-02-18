@@ -23,8 +23,8 @@ bundle install
 
 ## Compatibility
 
-- Ruby: 3.1, 3.2, 3.3, 3.4 (CI runs 3.2–3.4)
-- ActiveModel: 7.2, 8.0 (CI targets)
+- Ruby: 3.1, 3.2, 3.3, 3.4, 4.0 (CI runs 3.2–4.0)
+- ActiveModel: 7.2, 8.0, 8.1 (CI targets)
 - Rails/ActiveRecord: supported via ActiveModel::Validations (no Rails runtime dependency)
 
 ## Quickstart
@@ -109,8 +109,8 @@ bundle install
 bundle exec rake test
 
 # With ActiveRecord integration (in-memory sqlite)
-AR_INTEGRATION=1 ACTIVERECORD_VERSION="~> 8.0" bundle install
-AR_INTEGRATION=1 ACTIVERECORD_VERSION="~> 8.0" bundle exec rake test
+AR_INTEGRATION=1 ACTIVERECORD_VERSION="~> 8.1" bundle install
+AR_INTEGRATION=1 ACTIVERECORD_VERSION="~> 8.1" bundle exec rake test
 ```
 
 ## License

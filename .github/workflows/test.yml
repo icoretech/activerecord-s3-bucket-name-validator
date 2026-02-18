@@ -20,8 +20,8 @@ jobs:
   test:
     strategy:
       matrix:
-        ruby: ["3.2", "3.3", "3.4"]
-        activemodel: ["~> 7.2", "~> 8.0"]
+        ruby: ["3.2", "3.3", "3.4", "4.0"]
+        activemodel: ["~> 7.2", "~> 8.0", "~> 8.1"]
     runs-on: ubuntu-latest
 
     steps:
@@ -51,8 +51,8 @@ jobs:
   ar_integration:
     strategy:
       matrix:
-        ruby: ["3.2", "3.3", "3.4"]
-        activerecord: ["~> 7.2", "~> 8.0"]
+        ruby: ["3.2", "3.3", "3.4", "4.0"]
+        activerecord: ["~> 7.2", "~> 8.0", "~> 8.1"]
     runs-on: ubuntu-latest
 
     steps:

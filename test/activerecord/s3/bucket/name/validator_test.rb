@@ -12,21 +12,21 @@ class TA_Model
   include ActiveModel::Model
   attr_accessor :bucket_name
 
-  validates :bucket_name, s3_bucket_name: { transfer_acceleration: true }
+  validates :bucket_name, s3_bucket_name: {transfer_acceleration: true}
 end
 
 class DirectoryModel
   include ActiveModel::Model
   attr_accessor :bucket_name
 
-  validates :bucket_name, s3_bucket_name: { type: :directory }
+  validates :bucket_name, s3_bucket_name: {type: :directory}
 end
 
 class TableModel
   include ActiveModel::Model
   attr_accessor :bucket_name
 
-  validates :bucket_name, s3_bucket_name: { type: :table }
+  validates :bucket_name, s3_bucket_name: {type: :table}
 end
 
 class Activerecord::S3::Bucket::Name::ValidatorTest < Minitest::Test

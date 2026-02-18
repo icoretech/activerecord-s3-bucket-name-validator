@@ -23,7 +23,7 @@ end
 begin
   locales_glob = File.expand_path("../../../../../config/locales/*.yml", __FILE__)
   I18n.load_path += Dir[locales_glob] if Dir.exist?(File.dirname(locales_glob))
-rescue StandardError
+rescue
   # ignore i18n loading errors
 end
 
@@ -44,25 +44,25 @@ class S3BucketNameValidator < ActiveModel::EachValidator
     return if blank_ok?(value)
 
     valid = case type
-            when :general_purpose then validate_general_purpose(value, transfer_acceleration: !!options[:transfer_acceleration])
-            when :directory then validate_directory_bucket(value)
-            when :table then validate_table_bucket(value)
-            else
-              record.errors.add(attribute, :invalid, message: "unknown bucket type: #{type}")
-              false
-            end
+    when :general_purpose then validate_general_purpose(value, transfer_acceleration: !!options[:transfer_acceleration])
+    when :directory then validate_directory_bucket(value)
+    when :table then validate_table_bucket(value)
+    else
+      record.errors.add(attribute, :invalid, message: "unknown bucket type: #{type}")
+      false
+    end
 
     unless valid
       error_key = if type == :general_purpose && options[:transfer_acceleration] && value.include?(".")
-                    :s3_bucket_name_invalid_transfer_acceleration
-                  else
-                    case type
-                    when :general_purpose then :s3_bucket_name_invalid_general
-                    when :directory then :s3_bucket_name_invalid_directory
-                    when :table then :s3_bucket_name_invalid_table
-                    else :s3_bucket_name_invalid
-                    end
-                  end
+        :s3_bucket_name_invalid_transfer_acceleration
+      else
+        case type
+        when :general_purpose then :s3_bucket_name_invalid_general
+        when :directory then :s3_bucket_name_invalid_directory
+        when :table then :s3_bucket_name_invalid_table
+        else :s3_bucket_name_invalid
+        end
+      end
       record.errors.add(attribute, error_key)
     end
   end
@@ -78,7 +78,7 @@ class S3BucketNameValidator < ActiveModel::EachValidator
   # Based on AWS docs: General purpose bucket naming rules
   def validate_general_purpose(name, transfer_acceleration: false)
     return false unless length_between?(name, 3, 63)
-    return false unless name =~ /\A[a-z0-9.-]+\z/
+    return false unless /\A[a-z0-9.-]+\z/.match?(name)
     return false unless begins_and_ends_with_alnum?(name)
     return false if name.include?("..")
     return false if ip_like?(name)
@@ -91,10 +91,10 @@ class S3BucketNameValidator < ActiveModel::EachValidator
   # Based on AWS docs: Directory bucket naming rules (S3 Express One Zone)
   def validate_directory_bucket(name)
     return false unless length_between?(name, 3, 63)
-    return false unless name =~ /\A[a-z0-9-]+\z/
+    return false unless /\A[a-z0-9-]+\z/.match?(name)
     return false unless begins_and_ends_with_alnum?(name)
     # must contain --<zone-id>--x-s3 suffix
-    return false unless name =~ /--[a-z0-9-]+--x-s3\z/
+    return false unless /--[a-z0-9-]+--x-s3\z/.match?(name)
     # reserved prefixes/suffixes still apply
     return false if name.start_with?("xn--", "sthree-", "sthree-configurator", "amzn-s3-demo-")
     return false if name.end_with?("-s3alias", "--ol-s3", ".mrap", "--table-s3")
@@ -104,7 +104,7 @@ class S3BucketNameValidator < ActiveModel::EachValidator
   # Based on AWS docs: S3 Tables bucket naming rules
   def validate_table_bucket(name)
     return false unless length_between?(name, 3, 63)
-    return false unless name =~ /\A[a-z0-9-]+\z/
+    return false unless /\A[a-z0-9-]+\z/.match?(name)
     return false unless begins_and_ends_with_alnum?(name)
     return false unless RESERVED_PREFIXES_TABLE.none? { |p| name.start_with?(p) }
     return false unless RESERVED_SUFFIXES_TABLE.none? { |s| name.end_with?(s) }

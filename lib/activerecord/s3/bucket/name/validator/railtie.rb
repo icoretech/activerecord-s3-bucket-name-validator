@@ -16,4 +16,3 @@ module Activerecord
     end
   end
 end
-
