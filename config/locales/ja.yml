@@ -6,4 +6,5 @@ ja:
         s3_bucket_name_invalid_transfer_acceleration: "S3 Transfer Acceleration を使用する場合、ピリオドは使用できません"
         s3_bucket_name_invalid_directory: "有効な S3 ディレクトリバケット名ではありません（3～63 文字、小文字の英字・数字・ハイフン、末尾に --<zone-id>--x-s3 必須、予約済みの接頭/接尾辞不可）"
         s3_bucket_name_invalid_table: "有効な S3 Tables バケット名ではありません（3～63 文字、小文字の英字・数字・ハイフン、ピリオドおよびアンダースコア不可、予約済みの接頭/接尾辞不可）"
+        s3_bucket_name_invalid_vector: "有効な S3 Vectors バケット名ではありません（3～63 文字、小文字の英字・数字・ハイフン、ピリオドおよびアンダースコア不可、先頭/末尾は英数字）"
         s3_bucket_name_invalid: "有効な S3 バケット名ではありません"

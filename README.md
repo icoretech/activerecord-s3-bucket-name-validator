@@ -4,6 +4,7 @@ ActiveModel validator for Amazon S3 bucket names. It implements the official AWS
 - General purpose buckets (classic S3)
 - Directory buckets (S3 Express One Zone)
 - S3 Tables buckets
+- S3 vector buckets
 
 Works in any class using ActiveModel::Validations and in Rails/ActiveRecord models. Ships with i18n messages in multiple locales.
 
@@ -49,15 +50,18 @@ end
 
 ## Options
 
-- `type` — `:general_purpose` (default), `:directory`, or `:table`
+- `type` — `:general_purpose` (default), `:directory`, `:table`, or `:vector`
+- `namespace` — `:account_regional` allows the official account-regional general-purpose bucket suffix (`-<account-id>-<region>-an`)
 - `transfer_acceleration` — when `true`, periods are forbidden for general-purpose buckets
 
 Examples:
 
 ```ruby
 validates :bucket_name, s3_bucket_name: { transfer_acceleration: true }
+validates :bucket_name, s3_bucket_name: { namespace: :account_regional }
 validates :bucket_name, s3_bucket_name: { type: :directory }
 validates :bucket_name, s3_bucket_name: { type: :table }
+validates :bucket_name, s3_bucket_name: { type: :vector }
 ```
 
 ## i18n
@@ -67,6 +71,7 @@ Error keys provided:
 - `activemodel.errors.messages.s3_bucket_name_invalid_transfer_acceleration`
 - `activemodel.errors.messages.s3_bucket_name_invalid_directory`
 - `activemodel.errors.messages.s3_bucket_name_invalid_table`
+- `activemodel.errors.messages.s3_bucket_name_invalid_vector`
 
 Locales shipped: en, es, it, fr, de, pt-BR, ja, ko, zh-CN, zh-TW, ru, nl.
 
@@ -76,12 +81,14 @@ Rails loads locales via a Railtie; plain ActiveModel loads them at require-time.
 
 - Length 3–63, allowed characters, begin/end alphanumeric
 - No adjacent periods; not IP-like (general purpose)
-- Reserved prefixes/suffixes per AWS docs (for example `xn--`, `sthree-`, `amzn-s3-demo-`, `-s3alias`, `--ol-s3`, `.mrap`, `--x-s3`, `--table-s3`)
+- Reserved prefixes/suffixes per AWS docs (for example `xn--`, `sthree-`, `amzn-s3-demo-`, `-s3alias`, `--ol-s3`, `.mrap`, `--x-s3`, `--table-s3`, `-an`)
+- Account-regional general-purpose buckets must use `bucket-name-prefix-accountId-region-an` and require `namespace: :account_regional`
 - Directory buckets must end with `--<zone-id>--x-s3`
 - S3 Tables buckets disallow periods and underscores
+- S3 vector buckets disallow periods and underscores
 - Optional TA mode forbids periods
 
-Note: Global/partition uniqueness and immutability are service-side constraints and not enforced locally.
+Note: namespace uniqueness and immutability are service-side constraints and not enforced locally.
 
 ## Examples
 

@@ -30,7 +30,8 @@ end
 # Usage in a model:
 #   validates :bucket_name, s3_bucket_name: { type: :general_purpose }
 # Options:
-#   :type => :general_purpose (default), :directory, or :table
+#   :type => :general_purpose (default), :directory, :table, or :vector
+#   :namespace => :account_regional for general-purpose account regional bucket names
 #   :transfer_acceleration => true to forbid periods for TA buckets
 class S3BucketNameValidator < ActiveModel::EachValidator
   RESERVED_PREFIXES_GENERAL = %w[xn-- sthree- amzn-s3-demo-].freeze
@@ -44,9 +45,15 @@ class S3BucketNameValidator < ActiveModel::EachValidator
     return if blank_ok?(value)
 
     valid = case type
-    when :general_purpose then validate_general_purpose(value, transfer_acceleration: !!options[:transfer_acceleration])
+    when :general_purpose
+      validate_general_purpose(
+        value,
+        transfer_acceleration: !!options[:transfer_acceleration],
+        namespace: options[:namespace]
+      )
     when :directory then validate_directory_bucket(value)
     when :table then validate_table_bucket(value)
+    when :vector then validate_vector_bucket(value)
     else
       record.errors.add(attribute, :invalid, message: "unknown bucket type: #{type}")
       false
@@ -60,6 +67,7 @@ class S3BucketNameValidator < ActiveModel::EachValidator
         when :general_purpose then :s3_bucket_name_invalid_general
         when :directory then :s3_bucket_name_invalid_directory
         when :table then :s3_bucket_name_invalid_table
+        when :vector then :s3_bucket_name_invalid_vector
         else :s3_bucket_name_invalid
         end
       end
@@ -76,7 +84,7 @@ class S3BucketNameValidator < ActiveModel::EachValidator
   end
 
   # Based on AWS docs: General purpose bucket naming rules
-  def validate_general_purpose(name, transfer_acceleration: false)
+  def validate_general_purpose(name, transfer_acceleration: false, namespace: nil)
     return false unless length_between?(name, 3, 63)
     return false unless /\A[a-z0-9.-]+\z/.match?(name)
     return false unless begins_and_ends_with_alnum?(name)
@@ -85,6 +93,8 @@ class S3BucketNameValidator < ActiveModel::EachValidator
     return false unless RESERVED_PREFIXES_GENERAL.none? { |p| name.start_with?(p) }
     return false unless RESERVED_SUFFIXES_GENERAL.none? { |s| name.end_with?(s) }
     return false if transfer_acceleration && name.include?(".")
+    return false if name.end_with?("-an") && namespace != :account_regional
+    return false if namespace == :account_regional && !account_regional_name?(name)
     true
   end
 
@@ -111,6 +121,14 @@ class S3BucketNameValidator < ActiveModel::EachValidator
     true
   end
 
+  # Based on AWS docs: S3 vector bucket naming rules
+  def validate_vector_bucket(name)
+    return false unless length_between?(name, 3, 63)
+    return false unless /\A[a-z0-9-]+\z/.match?(name)
+    return false unless begins_and_ends_with_alnum?(name)
+    true
+  end
+
   def length_between?(str, min, max)
     str.length.between?(min, max)
   end
@@ -121,5 +139,9 @@ class S3BucketNameValidator < ActiveModel::EachValidator
 
   def ip_like?(str)
     str =~ /\A(?:\d{1,3}\.){3}\d{1,3}\z/
+  end
+
+  def account_regional_name?(str)
+    /\A.+-\d{12}-[a-z0-9-]+-\d-an\z/.match?(str)
   end
 end

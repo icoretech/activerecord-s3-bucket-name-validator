@@ -3,20 +3,31 @@ require "active_model"
 
 class TestModel
   include ActiveModel::Model
+
   attr_accessor :bucket_name
 
   validates :bucket_name, s3_bucket_name: true
 end
 
-class TA_Model
+class TAModel
   include ActiveModel::Model
+
   attr_accessor :bucket_name
 
   validates :bucket_name, s3_bucket_name: {transfer_acceleration: true}
 end
 
+class AccountRegionalModel
+  include ActiveModel::Model
+
+  attr_accessor :bucket_name
+
+  validates :bucket_name, s3_bucket_name: {namespace: :account_regional}
+end
+
 class DirectoryModel
   include ActiveModel::Model
+
   attr_accessor :bucket_name
 
   validates :bucket_name, s3_bucket_name: {type: :directory}
@@ -24,9 +35,18 @@ end
 
 class TableModel
   include ActiveModel::Model
+
   attr_accessor :bucket_name
 
   validates :bucket_name, s3_bucket_name: {type: :table}
+end
+
+class VectorModel
+  include ActiveModel::Model
+
+  attr_accessor :bucket_name
+
+  validates :bucket_name, s3_bucket_name: {type: :vector}
 end
 
 class Activerecord::S3::Bucket::Name::ValidatorTest < Minitest::Test
@@ -70,16 +90,25 @@ class Activerecord::S3::Bucket::Name::ValidatorTest < Minitest::Test
     refute TestModel.new(bucket_name: "foo.mrap").valid?
     refute TestModel.new(bucket_name: "foo--table-s3").valid?
     refute TestModel.new(bucket_name: "foo--ol-s3").valid?
+    refute TestModel.new(bucket_name: "foo-an").valid?
     # Must begin/end alphanumeric
     refute TestModel.new(bucket_name: "-foo").valid?
     refute TestModel.new(bucket_name: "foo-").valid?
     refute TestModel.new(bucket_name: "foo.").valid?
   end
 
-  def test_transfer_acceleration_forbids_periods
-    m = TA_Model.new(bucket_name: "my.example")
+  def test_account_regional_general_purpose_names
+    m = AccountRegionalModel.new(bucket_name: "my-example-bucket-111122223333-us-west-2-an")
+    assert m.valid?, m.errors.full_messages.inspect
+
+    m = AccountRegionalModel.new(bucket_name: "foo-an")
     refute m.valid?
-    m = TA_Model.new(bucket_name: "my-example")
+  end
+
+  def test_transfer_acceleration_forbids_periods
+    m = TAModel.new(bucket_name: "my.example")
+    refute m.valid?
+    m = TAModel.new(bucket_name: "my-example")
     assert m.valid?, m.errors.full_messages.inspect
   end
 
@@ -152,5 +181,23 @@ class Activerecord::S3::Bucket::Name::ValidatorTest < Minitest::Test
       t = TableModel.new(bucket_name: "foo#{s}")
       refute t.valid?
     end
+  end
+
+  def test_vector_bucket
+    v = VectorModel.new(bucket_name: "vector-bucket-1")
+    assert v.valid?, v.errors.full_messages.inspect
+
+    v = VectorModel.new(bucket_name: "bad.bucket")
+    refute v.valid?
+    v = VectorModel.new(bucket_name: "bad_bucket")
+    refute v.valid?
+    v = VectorModel.new(bucket_name: "-vectors")
+    refute v.valid?
+    v = VectorModel.new(bucket_name: "vectors-")
+    refute v.valid?
+    v = VectorModel.new(bucket_name: "Badvectors")
+    refute v.valid?
+    v = VectorModel.new(bucket_name: "a" * 64)
+    refute v.valid?
   end
 end

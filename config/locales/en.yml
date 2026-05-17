@@ -6,4 +6,5 @@ en:
         s3_bucket_name_invalid_transfer_acceleration: "cannot contain periods when using S3 Transfer Acceleration"
         s3_bucket_name_invalid_directory: "is not a valid S3 directory bucket name (3–63 chars; lowercase letters, numbers or hyphens; must end with --<zone-id>--x-s3; reserved prefixes/suffixes not allowed)"
         s3_bucket_name_invalid_table: "is not a valid S3 Tables bucket name (3–63 chars; lowercase letters, numbers or hyphens; no periods or underscores; reserved prefixes/suffixes not allowed)"
+        s3_bucket_name_invalid_vector: "is not a valid S3 Vectors bucket name (3–63 chars; lowercase letters, numbers or hyphens; no periods or underscores; start/end alphanumeric)"
         s3_bucket_name_invalid: "is not a valid S3 bucket name"
